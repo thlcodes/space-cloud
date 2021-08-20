@@ -22,7 +22,15 @@ func (m *Mongo) Read(ctx context.Context, col string, req *model.ReadRequest) (i
 	if req.Options != nil && len(req.Options.Join) > 0 {
 		return 0, nil, nil, nil, errors.New("cannot perform joins in mongo db")
 	}
-	collection := m.getClient().Database(m.dbName).Collection(col)
+	db := m.getClient().Database(m.dbName)
+	cols, err := db.ListCollectionNames(ctx, utils.M{"name": utils.M{"$regex": strings.ReplaceAll(col, "_", "[-_]")}})
+	if err != nil {
+		return 0, nil, nil, nil, err
+	}
+	if len(cols) > 0 {
+		col = cols[0]
+	}
+	collection := db.Collection(col)
 
 	req.Find = sanitizeWhereClause(ctx, col, req.Find)
 

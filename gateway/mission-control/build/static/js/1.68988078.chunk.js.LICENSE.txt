@@ -1,0 +1,13 @@
+/*!
+ * author-regex <https://github.com/jonschlinkert/author-regex>
+ *
+ * Copyright (c) 2014, 2017, Jon Schlinkert.
+ * Released under the MIT License.
+ */
+
+/*!
+ * parse-author <https://github.com/jonschlinkert/parse-author>
+ *
+ * Copyright (c) 2014-2017, Jon Schlinkert.
+ * Released under the MIT License.
+ */

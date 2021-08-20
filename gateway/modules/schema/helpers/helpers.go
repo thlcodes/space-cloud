@@ -279,10 +279,11 @@ func isFieldPresentInUpdate(field string, updateDoc map[string]interface{}) bool
 func getCollectionSchema(doc *ast.Document, dbName, collectionName string) (model.Fields, error) {
 	var isCollectionFound bool
 
+	dashedCollectionName := strings.ReplaceAll(collectionName, "-", "_")
 	fieldMap := model.Fields{}
 	for _, v := range doc.Definitions {
 		colName := v.(*ast.ObjectDefinition).Name.Value
-		if colName != collectionName {
+		if colName != collectionName && colName != dashedCollectionName {
 			continue
 		}
 
