@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -60,10 +61,22 @@ func LoadStringIfExists(value string, state map[string]interface{}) (string, err
 	return value, nil
 }
 
+var objectIdMatcher = regexp.MustCompile("^[0-9a-fA-F]{24}$")
+
 // LoadValue loads a value from the state
 func LoadValue(key string, state map[string]interface{}) (interface{}, error) {
 	if key == "" {
 		return nil, errors.New("Invalid key")
+	}
+
+	if strings.HasPrefix(key, "objectid:") {
+		return LoadValue(key[len("objectid:"):], state)
+	}
+
+	if len(key) == 24 && objectIdMatcher.MatchString(key) {
+		if obid, err := primitive.ObjectIDFromHex(key); err == nil {
+			return obid, nil
+		}
 	}
 
 	tempArray := splitVariable(key, '.')

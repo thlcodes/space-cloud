@@ -10,7 +10,6 @@ import (
 
 	"github.com/graphql-go/graphql/language/parser"
 	"github.com/graphql-go/graphql/language/source"
-	"github.com/segmentio/ksuid"
 	"github.com/spaceuptech/helpers"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
@@ -62,7 +61,7 @@ func SchemaValidator(ctx context.Context, dbAlias, dbType, col string, collectio
 
 		if fieldValue.IsFieldTypeRequired {
 			if fieldValue.Kind == model.TypeID && !ok {
-				value = ksuid.New().String()
+				value = primitive.NewObjectID()
 			} else if !ok {
 				return nil, helpers.Logger.LogError(helpers.GetRequestID(ctx), fmt.Sprintf("required field (%s) from table/colection (%s) not present in request", fieldKey, col), nil, nil)
 			}

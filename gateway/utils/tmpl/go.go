@@ -11,8 +11,8 @@ import (
 	"github.com/Masterminds/sprig"
 	"github.com/getlantern/deepcopy"
 	"github.com/ghodss/yaml"
-	"github.com/segmentio/ksuid"
 	"github.com/spaceuptech/helpers"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"github.com/spaceuptech/space-cloud/gateway/utils"
 )
@@ -66,7 +66,7 @@ type authModule interface {
 func CreateGoFuncMaps(auth authModule) template.FuncMap {
 	m := sprig.TxtFuncMap()
 	m["hash"] = utils.HashString
-	m["generateId"] = func() string { return ksuid.New().String() }
+	m["generateId"] = func() string { return primitive.NewObjectID().Hex() }
 	m["marshalJSON"] = func(a interface{}) (string, error) {
 		data, err := json.Marshal(a)
 		return string(data), err

@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/graphql-go/graphql/language/ast"
-	"github.com/segmentio/ksuid"
 	"github.com/spaceuptech/helpers"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"github.com/spaceuptech/space-cloud/gateway/model"
 	"github.com/spaceuptech/space-cloud/gateway/utils"
@@ -76,7 +76,7 @@ func (graph *Module) prepareDocs(doc map[string]interface{}, schemaFields model.
 	// Set a new id for all those field ids which do not have the field set already
 	for _, field := range fieldIDs {
 		if _, p := doc[field]; !p {
-			doc[field] = ksuid.New().String()
+			doc[field] = primitive.NewObjectID()
 		}
 	}
 

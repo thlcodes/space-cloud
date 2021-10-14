@@ -11,6 +11,7 @@ import (
 	"github.com/graphql-go/graphql/language/ast"
 	"github.com/graphql-go/graphql/language/kinds"
 	"github.com/spaceuptech/helpers"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"github.com/spaceuptech/space-cloud/gateway/model"
 	"github.com/spaceuptech/space-cloud/gateway/utils"
@@ -62,6 +63,14 @@ func checkType(ctx context.Context, dbAlias, dbType, col string, value interface
 			return value, nil
 		default:
 			return nil, helpers.Logger.LogError(helpers.GetRequestID(ctx), fmt.Sprintf("invalid type received for field %s in collection %s - wanted %s got Bool", fieldValue.FieldName, col, fieldValue.Kind), nil, nil)
+		}
+
+	case primitive.ObjectID:
+		switch fieldValue.Kind {
+		case model.TypeID:
+			return value, nil
+		default:
+			return nil, helpers.Logger.LogError(helpers.GetRequestID(ctx), fmt.Sprintf("invalid type received for field %s in collection %s - wanted %s got ObjectID", fieldValue.FieldName, col, fieldValue.Kind), nil, nil)
 		}
 
 	case time.Time, *time.Time:

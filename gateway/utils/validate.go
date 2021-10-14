@@ -10,6 +10,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/spaceuptech/helpers"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"github.com/spaceuptech/space-cloud/gateway/model"
 )
@@ -50,6 +51,14 @@ func attemptConvertIntToInt64(val interface{}) interface{} {
 	return val
 }
 
+func attemptConvertObjectIDToString(val interface{}) interface{} {
+	switch t := val.(type) {
+	case primitive.ObjectID:
+		return t.Hex()
+	}
+	return val
+}
+
 func attemptConvertInt64ToFloat(val interface{}) interface{} {
 	switch t := val.(type) {
 	case int64:
@@ -84,6 +93,7 @@ func compare(dbType string, v1, v2 interface{}) bool {
 }
 
 func adjustValTypes(v1, v2 interface{}) (interface{}, interface{}) {
+
 	v1 = attemptConvertBoolToInt64(v1)
 	v2 = attemptConvertBoolToInt64(v2)
 
@@ -92,6 +102,10 @@ func adjustValTypes(v1, v2 interface{}) (interface{}, interface{}) {
 
 	v1 = attemptConvertInt64ToFloat(v1)
 	v2 = attemptConvertInt64ToFloat(v2)
+
+	v1 = attemptConvertObjectIDToString(v1)
+	v2 = attemptConvertObjectIDToString(v2)
+
 	return v1, v2
 }
 
