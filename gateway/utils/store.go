@@ -69,12 +69,8 @@ func LoadValue(key string, state map[string]interface{}) (interface{}, error) {
 		return nil, errors.New("Invalid key")
 	}
 
-	if strings.HasPrefix(key, "objectid:") {
-		return LoadValue(key[len("objectid:"):], state)
-	}
-
 	if len(key) == 24 && objectIdMatcher.MatchString(key) {
-		if obid, err := primitive.ObjectIDFromHex(key); err == nil {
+		if obid, ierr := primitive.ObjectIDFromHex(key); ierr == nil {
 			return obid, nil
 		}
 	}
@@ -283,6 +279,13 @@ func LoadValue(key string, state map[string]interface{}) (interface{}, error) {
 
 		// If we are at the final element, it means we need to return that value
 		if index == length {
+			if s, ok := obj.(string); ok {
+				if len(s) == 24 && objectIdMatcher.MatchString(s) {
+					if obid, ierr := primitive.ObjectIDFromHex(s); ierr == nil {
+						return obid, nil
+					}
+				}
+			}
 			return obj, nil
 		}
 	}
