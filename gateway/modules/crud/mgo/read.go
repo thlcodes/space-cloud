@@ -266,6 +266,9 @@ func createGroupByStage(functionsMap bson.M, groupBy []interface{}, sort []strin
 	if len(groupBy) > 0 {
 		for _, val := range groupBy {
 			key := fmt.Sprintf("%v", val)
+			if strings.Contains(key, ".") {
+				key = strings.ReplaceAll(key, ".", "_")
+			}
 			value := fmt.Sprintf("$%v", val)
 			groupByMap[key] = value
 			for _, sortKey := range sort {
