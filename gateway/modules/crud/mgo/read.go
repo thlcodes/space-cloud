@@ -97,6 +97,9 @@ func (m *Mongo) Read(ctx context.Context, col string, req *model.ReadRequest) (i
 
 		pipeline := make([]bson.M, 0)
 		if len(req.Aggregate) > 0 {
+			if req.Unwind != "" {
+				pipeline = append(pipeline, bson.M{"$unwind": req.Unwind})
+			}
 			if len(req.Find) > 0 {
 				pipeline = append(pipeline, bson.M{"$match": req.Find})
 			}

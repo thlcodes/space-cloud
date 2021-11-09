@@ -11,16 +11,17 @@ type CreateRequest struct {
 
 // ReadRequest is the http body received for a read request
 type ReadRequest struct {
-	GroupBy     []interface{}          `json:"group"`
-	Aggregate   map[string][]string    `json:"aggregate"`
-	Find        map[string]interface{} `json:"find"`
-	Operation   string                 `json:"op"`
-	Options     *ReadOptions           `json:"options"`
-	IsBatch     bool                   `json:"isBatch"`
-	Extras      map[string]interface{} `json:"extras"`
-	PostProcess map[string]*PostProcess `json:"postProcess"`
+	GroupBy     []interface{}            `json:"group"`
+	Unwind      string                   `json:"unwind`
+	Aggregate   map[string][]string      `json:"aggregate"`
+	Find        map[string]interface{}   `json:"find"`
+	Operation   string                   `json:"op"`
+	Options     *ReadOptions             `json:"options"`
+	IsBatch     bool                     `json:"isBatch"`
+	Extras      map[string]interface{}   `json:"extras"`
+	PostProcess map[string]*PostProcess  `json:"postProcess"`
 	MatchWhere  []map[string]interface{} `json:"matchWhere"`
-	Cache     *config.ReadCacheOptions `json:"cache"`
+	Cache       *config.ReadCacheOptions `json:"cache"`
 }
 
 // ReadOptions is the options required for a read request

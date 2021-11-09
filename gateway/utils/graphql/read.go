@@ -263,6 +263,11 @@ func generateReadRequest(ctx context.Context, field *ast.Field, store utils.M) (
 		return nil, false, err
 	}
 
+	readRequest.Unwind, err = extractUnwind(ctx, field.Arguments, store)
+	if err != nil {
+		return nil, false, err
+	}
+
 	var hasOptions bool
 	readRequest.Options, hasOptions, err = generateOptions(ctx, field.Arguments, store)
 	if err != nil {
@@ -595,6 +600,22 @@ func extractQueryOp(ctx context.Context, args []*ast.Argument, store utils.M) (s
 	return utils.All, nil
 }
 
+func extractUnwind(ctx context.Context, args []*ast.Argument, store utils.M) (string, error) {
+	for _, v := range args {
+		if v.Name.Value == utils.GraphQLUnwindArgument {
+			temp, err := utils.ParseGraphqlValue(v.Value, store)
+			if err != nil {
+				return "", err
+			}
+			if str, ok := temp.(string); ok {
+				return "$" + str, nil
+			}
+			return "", helpers.Logger.LogError(helpers.GetRequestID(ctx), fmt.Sprintf("GraphQL (%s) argument is of type %v, but it should be of type string", utils.GraphQLUnwindArgument, reflect.TypeOf(temp)), nil, nil)
+		}
+	}
+	return "", nil
+}
+
 func extractGroupByClause(ctx context.Context, args []*ast.Argument, store utils.M) ([]interface{}, error) {
 	for _, v := range args {
 		switch v.Name.Value {
@@ -622,17 +643,31 @@ func ExtractWhereClause(args []*ast.Argument, store utils.M) (map[string]interfa
 			if err != nil {
 				return nil, err
 			}
+			into := map[string]interface{}{}
 			if obj, ok := temp.(utils.M); ok {
-				return obj, nil
+				flattenWhereClause("", obj, into)
+				return into, nil
 			}
 			if obj, ok := temp.(map[string]interface{}); ok {
-				return obj, nil
+				flattenWhereClause("", obj, into)
+				return into, nil
 			}
 			return nil, errors.New("invalid where clause provided")
 		}
 	}
 
 	return utils.M{}, nil
+}
+
+func flattenWhereClause(key string, from map[string]interface{}, into map[string]interface{}) {
+	for k, v := range from {
+		switch v := v.(type) {
+		case map[string]interface{}:
+			flattenWhereClause(strings.TrimLeft(key+"."+k, "."), v, into)
+		default:
+			into[strings.TrimLeft(key+"."+k, ".")] = v
+		}
+	}
 }
 
 func generateCacheOptions(ctx context.Context, directives []*ast.Directive, store utils.M) (*config.ReadCacheOptions, error) {

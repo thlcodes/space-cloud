@@ -125,6 +125,9 @@ const (
 // GraphQLGroupByArgument is used by graphql group clause
 const GraphQLGroupByArgument = "group"
 
+// GraphQLUnwindArgument is used by graphql group clause
+const GraphQLUnwindArgument = "unwind"
+
 // GraphQLAggregate is used by graphql aggregate clause
 const GraphQLAggregate = "aggregate"
 
