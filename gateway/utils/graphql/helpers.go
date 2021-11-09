@@ -11,6 +11,7 @@ import (
 
 	"github.com/graphql-go/graphql/language/ast"
 	"github.com/spaceuptech/helpers"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"github.com/spaceuptech/space-cloud/gateway/model"
 	"github.com/spaceuptech/space-cloud/gateway/utils"
@@ -229,16 +230,22 @@ func (graph *Module) processLinkedResult(ctx context.Context, field *ast.Field, 
 }
 
 func (graph *Module) processQueryResult(ctx context.Context, field *ast.Field, token string, store utils.M, result interface{}, schema model.Fields, cb model.GraphQLCallback) {
-
 	switch val := result.(type) {
-	case []interface{}:
-		array := utils.NewArray(len(val))
+	case []interface{}, primitive.A:
+		var tmp []interface{}
+		switch _val := val.(type) {
+		case []interface{}:
+			tmp = _val
+		case primitive.A:
+			tmp = ([]interface{})(_val)
+		}
+		array := utils.NewArray(len(tmp))
 
 		// Create a wait group
 		var wgArray sync.WaitGroup
-		wgArray.Add(len(val))
+		wgArray.Add(len(tmp))
 
-		for loopIndex, loopValue := range val {
+		for loopIndex, loopValue := range tmp {
 			go func(i int, v interface{}) {
 				defer wgArray.Done()
 				// users @db {
