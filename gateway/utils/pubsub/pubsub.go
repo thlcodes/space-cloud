@@ -2,6 +2,9 @@ package pubsub
 
 import (
 	"context"
+	"crypto/tls"
+	"log"
+	"net/url"
 	"sync"
 	"time"
 
@@ -26,12 +29,26 @@ func New(projectID, conn string) (*Module, error) {
 	if conn == "" {
 		conn = "localhost:6379"
 	}
-
+	pw := ""
+	var tc *tls.Config
+	if url, err := url.Parse(conn); err == nil {
+		if url.Host != "" {
+			conn = url.Host
+		}
+		if pass, ok := url.User.Password(); ok {
+			pw = pass
+		}
+		if url.Scheme == "rediss" {
+			tc = &tls.Config{}
+		}
+	}
 	c := redis.NewClient(&redis.Options{
-		Addr:     conn,
-		Password: "",
-		DB:       0,
+		Addr:      conn,
+		Password:  pw,
+		DB:        0,
+		TLSConfig: tc,
 	})
+	log.Printf("REDIS: host=%s pw=%s***%s tls=%t", conn, pw[:1], pw[len(pw)-1:], tc != nil)
 
 	// Create a temporary context
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
