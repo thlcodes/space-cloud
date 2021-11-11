@@ -48,7 +48,7 @@ func New(projectID, conn string) (*Module, error) {
 		DB:        0,
 		TLSConfig: tc,
 	})
-	log.Printf("REDIS: host=%s pw=%s***%s tls=%t", conn, pw[:1], pw[len(pw)-1:], tc != nil)
+	log.Printf("REDIS: host=%s pw=%t tls=%t", conn, pw == "", tc != nil)
 
 	// Create a temporary context
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
