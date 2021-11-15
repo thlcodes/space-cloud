@@ -3,14 +3,26 @@ package mgo
 import (
 	"context"
 	"errors"
+	"strings"
 
+	"github.com/spaceuptech/helpers"
 	"github.com/spaceuptech/space-cloud/gateway/model"
 	"github.com/spaceuptech/space-cloud/gateway/utils"
 )
 
 // Aggregate performs a mongo db pipeline aggregation
 func (m *Mongo) Aggregate(ctx context.Context, col string, req *model.AggregateRequest) (interface{}, error) {
-	collection := m.getClient().Database(m.dbName).Collection(col)
+	db := m.getClient().Database(m.dbName)
+	cols, err := db.ListCollectionNames(ctx, utils.M{"name": utils.M{"$regex": "^" + strings.ReplaceAll(col, "_", "[-_]") + "$"}})
+	if err != nil {
+		return nil, err
+	}
+	if len(cols) > 0 {
+		col = cols[0]
+	}
+	collection := db.Collection(col)
+
+	helpers.Logger.LogDebug(helpers.GetRequestID(ctx), "Mongo agregate", map[string]interface{}{"col": col, "pipeline": req.Pipeline, "op": req.Operation})
 
 	switch req.Operation {
 	case utils.One:

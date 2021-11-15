@@ -2,7 +2,9 @@ package mgo
 
 import (
 	"context"
+	"strings"
 
+	"github.com/spaceuptech/helpers"
 	"github.com/spaceuptech/space-cloud/gateway/model"
 	"github.com/spaceuptech/space-cloud/gateway/utils"
 )
@@ -10,7 +12,17 @@ import (
 // Create inserts a document (or multiple when op is "all") into the database
 func (m *Mongo) Create(ctx context.Context, col string, req *model.CreateRequest) (int64, error) {
 	// Create a collection object
-	collection := m.getClient().Database(m.dbName).Collection(col)
+	db := m.getClient().Database(m.dbName)
+	cols, err := db.ListCollectionNames(ctx, utils.M{"name": utils.M{"$regex": "^" + strings.ReplaceAll(col, "_", "[-_]") + "$"}})
+	if err != nil {
+		return 0, err
+	}
+	if len(cols) > 0 {
+		col = cols[0]
+	}
+	collection := db.Collection(col)
+
+	helpers.Logger.LogDebug(helpers.GetRequestID(ctx), "Mongo create", map[string]interface{}{"col": col, "doc": req.Document, "op": req.Operation})
 
 	switch req.Operation {
 	case utils.One:

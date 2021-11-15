@@ -3,17 +3,27 @@ package mgo
 import (
 	"context"
 	"errors"
+	"strings"
 
-	"go.mongodb.org/mongo-driver/mongo/options"
-
+	"github.com/spaceuptech/helpers"
 	"github.com/spaceuptech/space-cloud/gateway/model"
 	"github.com/spaceuptech/space-cloud/gateway/utils"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 // Delete removes the document(s) from the database which match the condition
 func (m *Mongo) Delete(ctx context.Context, col string, req *model.DeleteRequest) (int64, error) {
-	collection := m.getClient().Database(m.dbName).Collection(col)
+	db := m.getClient().Database(m.dbName)
+	cols, err := db.ListCollectionNames(ctx, utils.M{"name": utils.M{"$regex": "^" + strings.ReplaceAll(col, "_", "[-_]") + "$"}})
+	if err != nil {
+		return 0, err
+	}
+	if len(cols) > 0 {
+		col = cols[0]
+	}
+	collection := db.Collection(col)
 	req.Find = sanitizeWhereClause(ctx, col, req.Find)
+	helpers.Logger.LogDebug(helpers.GetRequestID(ctx), "Mongo delete", map[string]interface{}{"col": col, "find": req.Find, "op": req.Operation})
 
 	switch req.Operation {
 	case utils.One:

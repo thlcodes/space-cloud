@@ -23,7 +23,7 @@ func (m *Mongo) Read(ctx context.Context, col string, req *model.ReadRequest) (i
 		return 0, nil, nil, nil, errors.New("cannot perform joins in mongo db")
 	}
 	db := m.getClient().Database(m.dbName)
-	cols, err := db.ListCollectionNames(ctx, utils.M{"name": utils.M{"$regex": strings.ReplaceAll(col, "_", "[-_]")}})
+	cols, err := db.ListCollectionNames(ctx, utils.M{"name": utils.M{"$regex": "^" + strings.ReplaceAll(col, "_", "[-_]") + "$"}})
 	if err != nil {
 		return 0, nil, nil, nil, err
 	}
@@ -164,8 +164,10 @@ func (m *Mongo) Read(ctx context.Context, col string, req *model.ReadRequest) (i
 			var doc map[string]interface{}
 			err := cur.Decode(&doc)
 			if err != nil {
+				helpers.Logger.LogError(helpers.GetRequestID(ctx), "Document decode error", err, map[string]interface{}{"doc": cur.Current.String()})
 				return 0, nil, nil, nil, err
 			}
+			helpers.Logger.LogDebug(helpers.GetRequestID(ctx), "Decoded doc", map[string]interface{}{"dcc": doc})
 
 			if req.Options.Debug {
 				doc["_dbFetchTs"] = time.Now().Format(time.RFC3339Nano)
